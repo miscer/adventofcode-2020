@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -40,8 +39,8 @@ func main() {
 
 type entry struct {
 	letter   string
-	min      int
-	max      int
+	first    int
+	second   int
 	password string
 }
 
@@ -67,11 +66,11 @@ func readEntries(file *os.File) (entries []entry, err error) {
 }
 
 func parseEntry(input string) (en entry, err error) {
-	_, err = fmt.Sscanf(input, "%d-%d %1s: %s", &en.min, &en.max, &en.letter, &en.password)
+	_, err = fmt.Sscanf(input, "%d-%d %1s: %s", &en.first, &en.second, &en.letter, &en.password)
 	return
 }
 
 func (e *entry) isValid() bool {
-	c := strings.Count(e.password, e.letter)
-	return c >= e.min && c <= e.max
+	return (e.password[e.first-1:e.first] == e.letter) !=
+		(e.password[e.second-1:e.second] == e.letter)
 }
