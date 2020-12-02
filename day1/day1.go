@@ -29,12 +29,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	a, b, err := findMatchingEntries(numbers)
+	a, b, c, err := findMatchingEntries(numbers)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Found matching numbers: %d and %d\n", a, b)
+	fmt.Printf("Found matching numbers: %d, %d and %d\n", a, b, c)
 }
 
 func readNumbers(file *os.File) (numbers []int64, err error) {
@@ -58,14 +58,16 @@ func readNumbers(file *os.File) (numbers []int64, err error) {
 	return
 }
 
-func findMatchingEntries(numbers []int64) (int64, int64, error) {
+func findMatchingEntries(numbers []int64) (int64, int64, int64, error) {
 	for i, a := range numbers {
-		for _, b := range numbers[i+1:] {
-			if a+b == 2020 {
-				return a, b, nil
+		for j, b := range numbers[i+1:] {
+			for _, c := range numbers[j+1:] {
+				if a+b+c == 2020 {
+					return a, b, c, nil
+				}
 			}
 		}
 	}
 
-	return 0, 0, errors.New("no matching entries found")
+	return 0, 0, 0, errors.New("no matching entries found")
 }
