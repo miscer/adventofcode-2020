@@ -27,12 +27,25 @@ func main() {
 		log.Fatalf("Failed reading map: %v", err)
 	}
 
-	c, err := countTrees(m, 3, 1)
-	if err != nil {
-		log.Fatalf("Failed counting trees: %v", err)
+	slopes := []struct{ dx, dy int }{
+		{dx: 1, dy: 1},
+		{dx: 3, dy: 1},
+		{dx: 5, dy: 1},
+		{dx: 7, dy: 1},
+		{dx: 1, dy: 2},
 	}
 
-	fmt.Printf("Found %d trees\n", c)
+	result := 1
+	for _, s := range slopes {
+		c, err := countTrees(m, s.dx, s.dy)
+		if err != nil {
+			log.Fatalf("Failed counting trees: %v", err)
+		}
+
+		result *= c
+	}
+
+	fmt.Println(result)
 }
 
 type mapSquare int8
