@@ -1,0 +1,13 @@
+ecl:amb
+pid:690616023
+byr:1994 iyr:2014 hgt:172cm hcl:#c0946f eyr:2022
+
+eyr:1980 cid:97
+hcl:z ecl:#102145 iyr:2011 byr:1945
+pid:187cm hgt:179in
+
+ecl:amb
+iyr:2011
+cid:113
+eyr:2021 hcl:#b6652a pid:004682943 byr:1940
+hgt:173cm
