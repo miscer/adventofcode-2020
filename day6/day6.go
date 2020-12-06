@@ -22,25 +22,43 @@ func main() {
 
 	total := 0
 	for _, group := range groups {
-		total += group.size()
+		total += group.count()
 	}
 
 	fmt.Printf("Total: %d\n", total)
 }
 
 type question int16
-type group map[question]bool
+type group struct {
+	answers map[question]int
+	size    int
+}
 
 func newGroup() group {
-	return map[question]bool{}
+	return group{
+		answers: map[question]int{},
+		size:    0,
+	}
+}
+
+func (g *group) add() {
+	g.size++
 }
 
 func (g *group) mark(q question) {
-	(*g)[q] = true
+	g.answers[q]++
 }
 
-func (g group) size() int {
-	return len(g)
+func (g group) count() int {
+	count := 0
+
+	for _, value := range g.answers {
+		if value == g.size {
+			count++
+		}
+	}
+
+	return count
 }
 
 func parseGroups(reader io.Reader) ([]group, error) {
@@ -56,6 +74,8 @@ func parseGroups(reader io.Reader) ([]group, error) {
 		}
 
 		g := &groups[len(groups)-1]
+		g.add()
+
 		for i := 0; i < len(line); i++ {
 			q := question(line[i])
 			g.mark(q)
