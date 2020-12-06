@@ -15,29 +15,51 @@ func main() {
 	}
 	defer file.Close()
 
-	id, err := findHighestSeatID(file)
+	seats, err := parseSeats(file)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("Result: %d", id)
+	missing := findMissingSeats(seats)
+	for _, seat := range missing {
+		log.Printf("Missing seat: %d", seat.ID())
+	}
 }
 
-func findHighestSeatID(input io.Reader) (int, error) {
-	var highest int
+const height = 128
+const width = 8
+
+func findMissingSeats(seats []seat) []seat {
+	var missing []seat
+
+	present := map[seat]bool{}
+	for _, seat := range seats {
+		present[seat] = true
+	}
+
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			seat := newSeat(y, x)
+			if _, ok := present[seat]; !ok {
+				missing = append(missing, seat)
+			}
+		}
+	}
+
+	return missing
+}
+
+func parseSeats(input io.Reader) ([]seat, error) {
+	var seats []seat
 
 	scan := bufio.NewScanner(input)
 	for scan.Scan() {
 		line := scan.Text()
-		y, x := findSeatPosition(line, 128, 8)
-		id := (y * 8) + x
-
-		if id > highest {
-			highest = id
-		}
+		seat := newSeat(findSeatPosition(line, height, width))
+		seats = append(seats, seat)
 	}
 
-	return highest, scan.Err()
+	return seats, scan.Err()
 }
 
 func findSeatPosition(seat string, height int, width int) (int, int) {
@@ -60,4 +82,17 @@ func findSeatPosition(seat string, height int, width int) (int, int) {
 	}
 
 	return y, x
+}
+
+type seat struct {
+	y int
+	x int
+}
+
+func newSeat(y, x int) seat {
+	return seat{y: y, x: x}
+}
+
+func (s seat) ID() int {
+	return s.y*8 + s.x
 }
