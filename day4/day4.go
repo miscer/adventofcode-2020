@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -43,8 +45,84 @@ type passport struct {
 }
 
 func (p passport) IsValid() bool {
-	return p.birthYear != nil && p.issueYear != nil && p.expirationYear != nil &&
-		p.height != nil && p.hairColor != nil && p.eyeColor != nil && p.passportID != nil
+	if p.birthYear == nil {
+		return false
+	}
+	birthYear, err := strconv.Atoi(*p.birthYear)
+	if err != nil || birthYear < 1920 || birthYear > 2002 {
+		return false
+	}
+
+	if p.issueYear == nil {
+		return false
+	}
+	issueYear, err := strconv.Atoi(*p.issueYear)
+	if err != nil || issueYear < 2010 || issueYear > 2020 {
+		return false
+	}
+
+	if p.expirationYear == nil {
+		return false
+	}
+	expirationYear, err := strconv.Atoi(*p.expirationYear)
+	if err != nil || expirationYear < 2020 || expirationYear > 2030 {
+		return false
+	}
+
+	if p.height == nil {
+		return false
+	}
+	heightRe := regexp.MustCompile("^(\\d+)(cm|in)$")
+	heightMatches := heightRe.FindStringSubmatch(*p.height)
+	if heightMatches == nil {
+		return false
+	}
+
+	heightUnit := heightMatches[2]
+	heightValue, err := strconv.Atoi(heightMatches[1])
+	if err != nil {
+		return false
+	}
+	if heightUnit == "cm" && (heightValue < 150 || heightValue > 193) {
+		return false
+	}
+	if heightUnit == "in" && (heightValue < 59 || heightValue > 76) {
+		return false
+	}
+
+	if p.hairColor == nil {
+		return false
+	}
+	colorExpr := regexp.MustCompile("^#[a-f0-9]{6}$")
+	if !colorExpr.MatchString(*p.hairColor) {
+		return false
+	}
+
+	if p.eyeColor == nil {
+		return false
+	}
+	eyeColors := map[string]bool{
+		"amb": true,
+		"blu": true,
+		"brn": true,
+		"gry": true,
+		"grn": true,
+		"hzl": true,
+		"oth": true,
+	}
+	if _, ok := eyeColors[*p.eyeColor]; !ok {
+		return false
+	}
+
+	if p.passportID == nil {
+		return false
+	}
+	passIDRe := regexp.MustCompile("^\\d{9}$")
+	if !passIDRe.MatchString(*p.passportID) {
+		return false
+	}
+
+	return true
 }
 
 func readEntries(file *os.File) ([]passport, error) {
