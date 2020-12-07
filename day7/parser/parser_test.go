@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"adventofcode/day7/bags"
 	"reflect"
 	"testing"
 )
@@ -9,15 +10,15 @@ func TestParseBag(t *testing.T) {
 	tests := []struct {
 		name  string
 		input string
-		bag   ParsedBag
+		bag   bags.Bag
 		err   bool
 	}{
 		{
 			name:  "light red",
 			input: "light red bags contain 1 bright white bag, 2 muted yellow bags.",
-			bag: ParsedBag{
+			bag: bags.Bag{
 				Color: "light red",
-				Contains: map[string]int{
+				Contents: map[string]int{
 					"bright white": 1,
 					"muted yellow": 2,
 				},
@@ -27,9 +28,9 @@ func TestParseBag(t *testing.T) {
 		{
 			name:  "bright white",
 			input: "bright white bags contain 1 shiny gold bag.",
-			bag: ParsedBag{
+			bag: bags.Bag{
 				Color: "bright white",
-				Contains: map[string]int{
+				Contents: map[string]int{
 					"shiny gold": 1,
 				},
 			},
@@ -38,9 +39,9 @@ func TestParseBag(t *testing.T) {
 		{
 			name:  "drab tan",
 			input: "drab tan bags contain 5 drab maroon bags, 5 bright silver bags, 2 dim tan bags.",
-			bag: ParsedBag{
+			bag: bags.Bag{
 				Color: "drab tan",
-				Contains: map[string]int{
+				Contents: map[string]int{
 					"drab maroon":   5,
 					"bright silver": 5,
 					"dim tan":       2,
@@ -51,9 +52,9 @@ func TestParseBag(t *testing.T) {
 		{
 			name:  "faded blue",
 			input: "faded blue bags contain no other bags.",
-			bag: ParsedBag{
+			bag: bags.Bag{
 				Color:    "faded blue",
-				Contains: map[string]int{},
+				Contents: map[string]int{},
 			},
 			err: false,
 		},

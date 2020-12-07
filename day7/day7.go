@@ -1,6 +1,7 @@
 package main
 
 import (
+	"adventofcode/day7/bags"
 	"adventofcode/day7/parser"
 	"adventofcode/fileinput"
 	"bufio"
@@ -17,11 +18,14 @@ func main() {
 	defer file.Close()
 
 	bags, err := parseBags(file)
-	fmt.Println(bags)
+	count := getParentBags(bags, "shiny gold")
+	fmt.Println(count)
 }
 
-func parseBags(input io.Reader) ([]parser.ParsedBag, error) {
-	var bags []parser.ParsedBag
+type bagMap map[string]bags.Bag
+
+func parseBags(input io.Reader) (bagMap, error) {
+	bags := bagMap{}
 	scanner := bufio.NewScanner(input)
 
 	for scanner.Scan() {
@@ -30,8 +34,25 @@ func parseBags(input io.Reader) ([]parser.ParsedBag, error) {
 		if err != nil {
 			return bags, err
 		}
-		bags = append(bags, bag)
+		bags[bag.Color] = bag
 	}
 
 	return bags, scanner.Err()
+}
+
+func getParentBags(bags bagMap, color string) (count int) {
+	parents := map[string]bool{}
+
+	var add func(color string)
+	add = func(color string) {
+		for _, bag := range bags {
+			if bag.Contains(color) {
+				parents[bag.Color] = true
+				add(bag.Color)
+			}
+		}
+	}
+	add(color)
+
+	return len(parents)
 }

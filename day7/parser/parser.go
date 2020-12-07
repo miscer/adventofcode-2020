@@ -1,18 +1,14 @@
 package parser
 
 import (
+	"adventofcode/day7/bags"
 	"fmt"
 	"regexp"
 	"strconv"
 )
 
-type ParsedBag struct {
-	Color    string
-	Contains map[string]int
-}
-
-func ParseBag(input string) (ParsedBag, error) {
-	bag := ParsedBag{Contains: map[string]int{}}
+func ParseBag(input string) (bags.Bag, error) {
+	bag := bags.Bag{Contents: map[string]int{}}
 
 	re := regexp.MustCompile("^([\\w ]+) bags contain ([\\w ,]+).$")
 	match1 := re.FindStringSubmatch(input)
@@ -30,7 +26,7 @@ func ParseBag(input string) (ParsedBag, error) {
 			return bag, err
 		}
 
-		bag.Contains[color] = count
+		bag.Contents[color] = count
 	}
 
 	return bag, nil
