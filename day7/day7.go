@@ -18,7 +18,7 @@ func main() {
 	defer file.Close()
 
 	bags, err := parseBags(file)
-	count := getParentBags(bags, "shiny gold")
+	count := countChildBags(bags, "shiny gold")
 	fmt.Println(count)
 }
 
@@ -40,19 +40,12 @@ func parseBags(input io.Reader) (bagMap, error) {
 	return bags, scanner.Err()
 }
 
-func getParentBags(bags bagMap, color string) (count int) {
-	parents := map[string]bool{}
+func countChildBags(bags bagMap, color string) (count int) {
+	bag := bags[color]
 
-	var add func(color string)
-	add = func(color string) {
-		for _, bag := range bags {
-			if bag.Contains(color) {
-				parents[bag.Color] = true
-				add(bag.Color)
-			}
-		}
+	for c, n := range bag.Contents {
+		count += n * (countChildBags(bags, c) + 1)
 	}
-	add(color)
 
-	return len(parents)
+	return
 }
