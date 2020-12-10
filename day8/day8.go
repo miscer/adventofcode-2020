@@ -3,6 +3,7 @@ package main
 import (
 	"adventofcode/fileinput"
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -22,12 +23,17 @@ func main() {
 		log.Fatal(err)
 	}
 
-	acc, err := runProgram(prog)
-	if err != nil {
-		log.Fatal(err)
-	}
+	for i := 0; i < len(prog); i++ {
+		prog[i] = flipInstruction(prog[i])
+		acc, err := runProgram(prog)
 
-	fmt.Printf("Result: %d", acc)
+		if err == nil {
+			log.Printf("acc: %d", acc)
+			return
+		}
+
+		prog[i] = flipInstruction(prog[i])
+	}
 }
 
 type instruction struct {
@@ -101,16 +107,31 @@ func runProgram(prog program) (int, error) {
 
 	for {
 		if _, ok := ran[comp.ip]; ok {
-			break
+			return comp.acc, errors.New("infinite loop")
 		}
 
 		ran[comp.ip] = true
 
 		err := comp.tick()
 		if err != nil {
-			return 0, err
+			return comp.acc, err
+		}
+
+		if comp.ip == len(prog) {
+			break
 		}
 	}
 
 	return comp.acc, nil
+}
+
+func flipInstruction(instr instruction) instruction {
+	switch instr.operation {
+	case "jmp":
+		return instruction{operation: "nop", argument: instr.argument}
+	case "nop":
+		return instruction{operation: "jmp", argument: instr.argument}
+	default:
+		return instr
+	}
 }
