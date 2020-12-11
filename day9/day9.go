@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"os"
 	"strconv"
 )
@@ -19,12 +20,18 @@ func main() {
 
 	nums, err := readNumbers(input)
 	invalid, found := findInvalidNumber(preamble, nums)
-
-	if found {
-		log.Printf("found invalid number: %d", invalid)
-	} else {
-		log.Print("no invalid number found")
+	if !found {
+		log.Fatal("no invalid number found")
+		return
 	}
+
+	set := findSet(nums, invalid)
+	if set == nil {
+		log.Fatal("no set of numbers found")
+	}
+
+	min, max := findMinMax(set)
+	log.Printf("result: %d", min+max)
 }
 
 func getArgs() (io.ReadCloser, int, error) {
@@ -82,4 +89,40 @@ func findPair(nums []int, sum int) bool {
 		}
 	}
 	return false
+}
+
+func findSet(nums []int, sum int) []int {
+	for i := 0; i < len(nums)-1; i++ {
+		acc := nums[i]
+		set := []int{acc}
+
+		for j := i + 1; j < len(nums); j++ {
+			set = append(set, nums[j])
+			acc += nums[j]
+
+			if acc == sum {
+				return set
+			} else if acc > sum {
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+func findMinMax(nums []int) (int, int) {
+	min := math.MaxInt64
+	max := 0
+
+	for _, num := range nums {
+		if num > max {
+			max = num
+		}
+		if num < min {
+			min = num
+		}
+	}
+
+	return min, max
 }
