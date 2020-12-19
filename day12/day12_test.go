@@ -5,32 +5,6 @@ import (
 	"testing"
 )
 
-func TestTurn_Move(t1 *testing.T) {
-	tests := []struct {
-		name  string
-		angle int
-		ship  Ship
-		want  Ship
-	}{
-		{name: "right 90", angle: 90, ship: Ship{direction: North}, want: Ship{direction: East}},
-		{name: "right 180", angle: 180, ship: Ship{direction: North}, want: Ship{direction: South}},
-		{name: "right 270", angle: 270, ship: Ship{direction: North}, want: Ship{direction: West}},
-		{name: "left 90", angle: -90, ship: Ship{direction: North}, want: Ship{direction: West}},
-		{name: "left 180", angle: -180, ship: Ship{direction: North}, want: Ship{direction: South}},
-		{name: "left 270", angle: -270, ship: Ship{direction: North}, want: Ship{direction: East}},
-	}
-	for _, tt := range tests {
-		t1.Run(tt.name, func(t1 *testing.T) {
-			t := Turn{
-				angle: tt.angle,
-			}
-			if got := t.Move(tt.ship); !reflect.DeepEqual(got, tt.want) {
-				t1.Errorf("Move() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestDirection_Delta(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -54,6 +28,28 @@ func TestDirection_Delta(t *testing.T) {
 			}
 			if goty != tt.y {
 				t.Errorf("Delta() y = %v, want %v", goty, tt.y)
+			}
+		})
+	}
+}
+
+func TestVector_Turn(t *testing.T) {
+	tests := []struct {
+		name   string
+		vector Vector
+		angle  int
+		want   Vector
+	}{
+		{name: "left", vector: Vector{1, 1}, angle: -90, want: Vector{-1, 1}},
+		{name: "right", vector: Vector{1, 1}, angle: 90, want: Vector{1, -1}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := tt.vector
+			v.Turn(tt.angle)
+
+			if !reflect.DeepEqual(v, tt.want) {
+				t.Errorf("want: %s, got: %s", tt.want, v)
 			}
 		})
 	}

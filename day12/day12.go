@@ -23,13 +23,10 @@ func main() {
 	}
 	log.Print(actions)
 
-	ship := Ship{direction: East}
+	ship := Ship{waypoint: Vector{x: 10, y: 1}}
 	for _, i := range actions {
 		ship = i.Move(ship)
-
-		x, y := ship.Position().Get()
-		angle := ship.Direction().Angle()
-		log.Printf("x: %d, y: %d, angle: %d", x, y, angle)
+		log.Printf("pos: %s, wp: %s", ship.Position(), ship.Waypoint())
 	}
 
 	log.Printf("distance: %d", ship.Distance())
@@ -74,29 +71,21 @@ func ParseActions(reader io.Reader) (is []Instruction, err error) {
 }
 
 type Ship struct {
-	direction Direction
-	position  Position
+	position Vector
+	waypoint Vector
 }
 
-func (s Ship) Position() Position {
-	return s.position
+func (s *Ship) Position() *Vector {
+	return &s.position
 }
 
-func (s Ship) Direction() Direction {
-	return s.direction
+func (s *Ship) Waypoint() *Vector {
+	return &s.waypoint
 }
 
-func (s Ship) Distance() int {
+func (s *Ship) Distance() int {
 	x, y := s.position.Get()
 	return int(math.Abs(float64(x)) + math.Abs(float64(y)))
-}
-
-func (s *Ship) Move(x, y int) {
-	s.position.Move(x, y)
-}
-
-func (s *Ship) Turn(d Direction) {
-	s.direction = d
 }
 
 type Instruction interface {
@@ -110,7 +99,7 @@ type Move struct {
 
 func (m Move) Move(ship Ship) Ship {
 	dx, dy := m.direction.Delta()
-	ship.Move(m.distance*dx, m.distance*dy)
+	ship.Waypoint().Add(m.distance*dx, m.distance*dy)
 	return ship
 }
 
@@ -119,8 +108,8 @@ type Forward struct {
 }
 
 func (f Forward) Move(ship Ship) Ship {
-	dx, dy := ship.direction.Delta()
-	ship.Move(f.distance*dx, f.distance*dy)
+	dx, dy := ship.Waypoint().Get()
+	ship.Position().Add(f.distance*dx, f.distance*dy)
 	return ship
 }
 
@@ -129,20 +118,37 @@ type Turn struct {
 }
 
 func (t Turn) Move(ship Ship) Ship {
-	angle := (ship.Direction().Angle() + t.angle + 360) % 360
-	ship.Turn(Direction{angle: angle})
+	ship.Waypoint().Turn(t.angle)
 	return ship
 }
 
-type Position struct{ x, y int }
+type Vector struct{ x, y int }
 
-func (p Position) Get() (int, int) {
-	return p.x, p.y
+func (v Vector) Get() (int, int) {
+	return v.x, v.y
 }
 
-func (p *Position) Move(x, y int) {
-	p.x += x
-	p.y += y
+func (v *Vector) Set(x, y int) {
+	v.x = x
+	v.y = y
+}
+
+func (v *Vector) Add(x, y int) {
+	v.x += x
+	v.y += y
+}
+
+func (v *Vector) Turn(deg int) {
+	rad := float64(deg) / 180 * math.Pi * -1
+
+	x := float64(v.x)*math.Cos(rad) - float64(v.y)*math.Sin(rad)
+	y := float64(v.x)*math.Sin(rad) + float64(v.y)*math.Cos(rad)
+
+	v.x, v.y = int(math.Round(x)), int(math.Round(y))
+}
+
+func (v Vector) String() string {
+	return fmt.Sprintf("(%d;%d)", v.x, v.y)
 }
 
 type Direction struct{ angle int }
