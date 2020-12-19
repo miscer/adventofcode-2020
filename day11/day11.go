@@ -73,12 +73,12 @@ func step(l Layout) (Layout, int) {
 	for y := 0; y < l.height; y++ {
 		for x := 0; x < l.width; x++ {
 			cell := l.Cell(x, y)
-			occ := l.AdjacentOccupied(x, y)
+			occ := l.VisibleOccupied(x, y)
 
 			if cell == EmptySeat && occ == 0 {
 				next.Set(x, y, OccupiedSeat)
 				changes++
-			} else if cell == OccupiedSeat && occ >= 4 {
+			} else if cell == OccupiedSeat && occ >= 5 {
 				next.Set(x, y, EmptySeat)
 				changes++
 			} else {
@@ -125,10 +125,10 @@ func (l Layout) String() string {
 
 func (l Layout) Cell(x int, y int) Cell {
 	if y < 0 || y >= l.height {
-		return Floor
+		return OutOfBounds
 	}
 	if x < 0 || x >= l.width {
-		return Floor
+		return OutOfBounds
 	}
 	return l.grid[y][x]
 }
@@ -137,14 +137,30 @@ func (l Layout) Set(x int, y int, cell Cell) {
 	l.grid[y][x] = cell
 }
 
-func (l Layout) AdjacentOccupied(x int, y int) int {
+func (l Layout) VisibleOccupied(x int, y int) int {
 	occ := 0
 
 	for i := -1; i <= 1; i++ {
 		for j := -1; j <= 1; j++ {
-			cell := l.Cell(x+i, y+j)
-			if cell == OccupiedSeat && !(i == 0 && j == 0) {
-				occ++
+			if i == 0 && j == 0 {
+				continue
+			}
+
+			dx, dy := i, j
+
+			for {
+				cell := l.Cell(x+dx, y+dy)
+
+				if cell == OutOfBounds || cell == EmptySeat {
+					break
+				}
+				if cell == OccupiedSeat {
+					occ++
+					break
+				}
+
+				dx += i
+				dy += j
 			}
 		}
 	}
@@ -172,6 +188,7 @@ const (
 	EmptySeat Cell = iota
 	OccupiedSeat
 	Floor
+	OutOfBounds
 )
 
 func ParseCell(char int32) (Cell, error) {
